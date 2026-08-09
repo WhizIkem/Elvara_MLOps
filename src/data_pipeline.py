@@ -6,10 +6,10 @@ def load_data(data_dir: str = 'data/raw'):
   if not os.path.exists(data_dir) and os.path.exists('patients.csv'):
     data_dir = '.'
     patients = pd.read_csv('../data/raw/patients.csv', parse_dates=['registration_date'])
-    labs = pd.read_csv('../data/raw/labs.csv', parse_dates=['timestamp'])
-    vitals = pd.read_csv('../data/raw/vitals.csv', parse_dates=['timestamp'])
-    history = pd.read_csv('../data/raw/history.csv')
-    outcomes = pd.read_csv('../data/raw/outcomes.csv', parse_dates=['diagnosis_time'])
+    labs = pd.read_csv('../data/raw/laboratory_results.csv', parse_dates=['timestamp'])
+    vitals = pd.read_csv('../data/raw/vital_signs.csv', parse_dates=['timestamp'])
+    history = pd.read_csv('../data/raw/clinical_history.csv')
+    outcomes = pd.read_csv('../data/raw/sepsis_outcomes.csv', parse_dates=['diagnosis_time'])
 
     return patients, labs, vitals, history, outcomes
 

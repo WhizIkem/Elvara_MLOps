@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "number_of_columns": 43,
+  "reference_rows": 5000,
+  "current_rows": 5000,
+  "drift_detected": false
+}

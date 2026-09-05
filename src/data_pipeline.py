@@ -1,17 +1,19 @@
 import os
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
-def load_data(data_dir: str = 'data/raw'):
-  if not os.path.exists(data_dir) and os.path.exists('patients.csv'):
-    data_dir = '.'
-    patients = pd.read_csv('../data/raw/patients.csv', parse_dates=['registration_date'])
-    labs = pd.read_csv('../data/raw/laboratory_results.csv', parse_dates=['timestamp'])
-    vitals = pd.read_csv('../data/raw/vital_signs.csv', parse_dates=['timestamp'])
-    history = pd.read_csv('../data/raw/clinical_history.csv')
-    outcomes = pd.read_csv('../data/raw/sepsis_outcomes.csv', parse_dates=['diagnosis_time'])
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-    return patients, labs, vitals, history, outcomes
+def load_data(data_dir: str | Path = BASE_DIR / 'data/raw'):
+  data_dir = Path(data_dir)
+  patients = pd.read_csv(data_dir / 'patients.csv', parse_dates=['registration_date'])
+  labs = pd.read_csv(data_dir / 'laboratory_results.csv', parse_dates=['timestamp'])
+  vitals = pd.read_csv(data_dir / 'vital_signs.csv', parse_dates=['timestamp'])
+  history = pd.read_csv(data_dir / 'clinical_history.csv')
+  outcomes = pd.read_csv(data_dir / 'sepsis_outcomes.csv', parse_dates=['diagnosis_time'])
+
+  return patients, vitals, labs, history, outcomes
 
 def clean_data(
     patients: pd.DataFrame, 
@@ -60,14 +62,14 @@ def clean_data(
   vitals_cols = ['heart_rate', 'temperature', 'oxygen_saturation', 'respiratory_rate', 'blood_pressure']
   labs_cols = ['white_cell_count', 'crp', 'lactate', 'creatinine', 'platelet_count']
 
-  vitals_clean[vitals_cols] = vitals_clean.groupby('patient_id')[vitals_cols].transform(lambda s: s.fillna())
+  vitals_clean[vitals_cols] = vitals_clean.groupby('patient_id')[vitals_cols].transform(lambda s: s.ffill())
   vitals_clean[vitals_cols] = vitals_clean.groupby('patient_id')[vitals_cols].transform(lambda s: s.fillna(s.median()))
 
-  labs_clean[labs_cols] = labs_clean.groupby('patient_id')[labs_cols].transform(lambda s: s.fillna())
+  labs_clean[labs_cols] = labs_clean.groupby('patient_id')[labs_cols].transform(lambda s: s.ffill())
   labs_clean[labs_cols] = labs_clean.groupby('patient_id')[labs_cols].transform(lambda s: s.fillna(s.median()))
 
   return patients_clean, vitals_clean, labs_clean, history_clean, outcomes_clean
 
 if __name__ == "__main__":
-  patients, labs, vitals, history, outcomes = load_data()
+  patients, vitals, labs, history, outcomes = load_data()
   p_c, v_c, l_c, h_c, o_c = clean_data(patients, vitals, labs, history, outcomes)

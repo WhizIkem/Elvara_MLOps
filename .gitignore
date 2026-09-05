@@ -1,2 +1,10 @@
+Elvara/
 data/
 venv/
+.venv/
+env/
+
+
+__pycache__/
+
+Elvara.zip

@@ -1,0 +1,15 @@
+venv/
+.venv/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+notebooks/
+data/raw/
+reports/
+*.ipynb
+.pytest_cache/
+.mypy_cache/
+.vscode/
+*.md
+docker/

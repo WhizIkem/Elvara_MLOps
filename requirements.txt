@@ -1,0 +1,11 @@
+fastapi>=0.141,<0.142
+uvicorn[standard]>=0.52,<0.53
+pydantic>=2.13,<3
+starlette>=1.5,<2
+anyio>=4.14,<5
+h11>=0.16,<1
+prometheus_client>=0.26,<1
+pandas>=2.2,<4
+numpy>=1.26,<3
+scikit-learn>=1.9,<2
+joblib>=1.5,<2

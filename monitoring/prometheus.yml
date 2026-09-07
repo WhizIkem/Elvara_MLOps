@@ -4,7 +4,7 @@ global:
 
 scrape_configs:
   - job_name: 'elvara-sepsis-service'
-    scheme: https
+    scheme: 'https'
     metrics_path: "/metrics"
     static_configs:
       - targets: ["elvaramlops-production-5c92.up.railway.app:443"]

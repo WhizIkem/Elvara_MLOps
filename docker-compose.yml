@@ -20,12 +20,12 @@ services:
       retries: 3
 
   prometheus:
-    image: prom/prometheus:latest
+    build:
+      context: .
+      dockerfile: monitoring/Dockerfile.prometheus
     container_name: elvara_prometheus
     ports:
       - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     restart: always
 
   grafana:

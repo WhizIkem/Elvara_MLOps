@@ -46,10 +46,10 @@
     "platelet_count_last"
   ],
   "primary_metrics": {
-    "roc-auc": 0.9559,
-    "precision": 0.9769,
-    "recall": 0.8817,
-    "f1-score": 0.9269
+    "roc-auc": 0.9562,
+    "precision": 0.9768,
+    "recall": 0.88,
+    "f1-score": 0.9259
   },
   "baseline_metrics": {
     "model_type": "LogisticRegression",

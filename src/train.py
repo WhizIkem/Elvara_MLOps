@@ -84,8 +84,8 @@ def train_and_evaluate_model(
 
   # 2 Primary Model : HistGradientBoostingClassifier
   primary_hgb = HistGradientBoostingClassifier(
-    max_iter=150,
-    learning_rate=0.5,
+    max_iter=300,
+    learning_rate=0.08,
     max_depth=5,
     min_samples_leaf=10,
     class_weight='balanced',

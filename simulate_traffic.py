@@ -2,9 +2,12 @@ import time
 import random
 import httpx
 import os
+import argparse
+import json
 from datetime import datetime, timedelta
 
 API_URL = os.getenv("API_URL", "https://elvaramlops-production-12a3.up.railway.app/predict-risk")
+RESULTS_FILE = "simulation_results.json"
 
 def generate_random_patient(pid: int):
     now = datetime.utcnow()
@@ -50,17 +53,39 @@ def generate_random_patient(pid: int):
         "labs": labs
     }
 
-def main(total_requests: int = 30):
+def main(total_requests: int = 30, inspect_patient: int | None = None):
+    if inspect_patient is not None:
+        try:
+            with open(RESULTS_FILE, "r", encoding="utf-8") as file:
+                records = json.load(file)
+        except FileNotFoundError:
+            print(f"No saved simulation results found at {RESULTS_FILE}.")
+            print("Run the simulator once without --inspect first.")
+            return
+
+        record = next(
+            (item for item in records if item["patient"]["patient_id"] == inspect_patient),
+            None,
+        )
+        if record is None:
+            print(f"Patient #{inspect_patient} was not found in {RESULTS_FILE}.")
+            return
+
+        print(json.dumps(record, indent=2))
+        return
+
     print(f"--- Generating {total_requests} real-time sepsis prediction requests to target: {API_URL} ---")
     client = httpx.Client(timeout=15.0)
     
     counts = {"Low": 0, "Moderate": 0, "High": 0}
+    records = []
     for i in range(1, total_requests + 1):
         patient = generate_random_patient(pid=1000 + i)
         try:
             r = client.post(API_URL, json=patient)
             if r.status_code == 200:
                 data = r.json()
+                records.append({"patient": patient, "prediction": data})
                 cat = data['risk_category']
                 counts[cat] = counts.get(cat, 0) + 1
                 print(f"[{i}/{total_requests}] Patient #{data['patient_id']} (Age {patient['age']}) -> Score: {data['sepsis_risk_score']:.4f} | Category: {cat}")
@@ -73,6 +98,18 @@ def main(total_requests: int = 30):
 
     print("\n--- Simulation Summary ---")
     print(f"Low Risk: {counts.get('Low', 0)} | Moderate Risk: {counts.get('Moderate', 0)} | High Risk: {counts.get('High', 0)}")
+    with open(RESULTS_FILE, "w", encoding="utf-8") as file:
+        json.dump(records, file, indent=2)
+    print(f"Saved {len(records)} successful results to {RESULTS_FILE}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Send simulated patient predictions to the Elvara API.")
+    parser.add_argument("--requests", type=int, default=30, help="Number of patients to simulate.")
+    parser.add_argument(
+        "--inspect",
+        type=int,
+        metavar="PATIENT_ID",
+        help="Print the generated input and prediction for one patient, e.g. --inspect 1029."
+    )
+    args = parser.parse_args()
+    main(total_requests=args.requests, inspect_patient=args.inspect)

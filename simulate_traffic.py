@@ -7,84 +7,39 @@ from datetime import datetime, timedelta
 API_URL = os.getenv("API_URL", "https://elvaramlops-production-12a3.up.railway.app/predict-risk")
 
 def generate_random_patient(pid: int):
-    # 40% chance of generating a high/moderate deterioration risk patient
-    is_high_risk = random.random() < 0.40
     now = datetime.utcnow()
 
-    if is_high_risk:
-        age = random.randint(70, 92)
-        comorbidities = random.randint(2, 4)
-        
-        # Series of 3 vital readings showing deterioration over 6 hours
-        vitals = [
-            {
-                "timestamp": (now - timedelta(hours=6)).isoformat(),
-                "heart_rate": round(random.uniform(92.0, 102.0), 1),
-                "temperature": round(random.uniform(37.8, 38.4), 1),
-                "oxygen_saturation": round(random.uniform(94.0, 96.0), 1),
-                "respiratory_rate": round(random.uniform(19.0, 22.0), 1),
-                "blood_pressure": round(random.uniform(115.0, 125.0), 1)
-            },
-            {
-                "timestamp": (now - timedelta(hours=3)).isoformat(),
-                "heart_rate": round(random.uniform(105.0, 115.0), 1),
-                "temperature": round(random.uniform(38.5, 39.1), 1),
-                "oxygen_saturation": round(random.uniform(92.0, 94.0), 1),
-                "respiratory_rate": round(random.uniform(22.0, 25.0), 1),
-                "blood_pressure": round(random.uniform(102.0, 112.0), 1)
-            },
-            {
-                "timestamp": now.isoformat(),
-                "heart_rate": round(random.uniform(118.0, 135.0), 1),
-                "temperature": round(random.uniform(39.2, 40.0), 1),
-                "oxygen_saturation": round(random.uniform(88.0, 91.0), 1),
-                "respiratory_rate": round(random.uniform(26.0, 32.0), 1),
-                "blood_pressure": round(random.uniform(85.0, 98.0), 1)
-            }
-        ]
-        
-        labs = [
-            {
-                "timestamp": (now - timedelta(hours=4)).isoformat(),
-                "white_cell_count": round(random.uniform(12.0, 15.0), 1),
-                "crp": round(random.uniform(45.0, 75.0), 1),
-                "lactate": round(random.uniform(2.1, 3.0), 2),
-                "creatinine": round(random.uniform(1.4, 1.8), 2),
-                "platelet_count": round(random.uniform(130.0, 170.0), 1)
-            },
-            {
-                "timestamp": now.isoformat(),
-                "white_cell_count": round(random.uniform(16.0, 24.0), 1),
-                "crp": round(random.uniform(90.0, 160.0), 1),
-                "lactate": round(random.uniform(3.2, 5.2), 2),
-                "creatinine": round(random.uniform(2.0, 3.2), 2),
-                "platelet_count": round(random.uniform(70.0, 120.0), 1)
-            }
-        ]
-    else:
-        age = random.randint(25, 65)
-        comorbidities = random.randint(0, 1)
-        
-        vitals = [
-            {
-                "timestamp": now.isoformat(),
-                "heart_rate": round(random.uniform(68.0, 82.0), 1),
-                "temperature": round(random.uniform(36.5, 37.1), 1),
-                "oxygen_saturation": round(random.uniform(97.0, 99.0), 1),
-                "respiratory_rate": round(random.uniform(13.0, 16.0), 1),
-                "blood_pressure": round(random.uniform(115.0, 128.0), 1)
-            }
-        ]
-        labs = [
-            {
-                "timestamp": now.isoformat(),
-                "white_cell_count": round(random.uniform(5.5, 8.5), 1),
-                "crp": round(random.uniform(2.0, 6.0), 1),
-                "lactate": round(random.uniform(0.9, 1.3), 2),
-                "creatinine": round(random.uniform(0.8, 1.1), 2),
-                "platelet_count": round(random.uniform(200.0, 320.0), 1)
-            }
-        ]
+    age = random.randint(18, 95)
+    comorbidities = min(random.randint(0, 6), max(0, age // 15))
+    vital_count = random.randint(1, 3)
+    lab_count = random.randint(1, 2)
+
+    def bounded_gauss(mean, standard_deviation, minimum, maximum):
+        return max(minimum, min(maximum, random.gauss(mean, standard_deviation)))
+
+    vitals = []
+    for observation in range(vital_count):
+        timestamp = now - timedelta(hours=(vital_count - observation - 1) * 3)
+        vitals.append({
+            "timestamp": timestamp.isoformat(),
+            "heart_rate": round(bounded_gauss(82, 18, 45, 140), 1),
+            "temperature": round(bounded_gauss(37.2, 1.0, 35.0, 40.5), 1),
+            "oxygen_saturation": round(bounded_gauss(96, 3, 86, 100), 1),
+            "respiratory_rate": round(bounded_gauss(18, 5, 8, 35), 1),
+            "blood_pressure": round(bounded_gauss(115, 20, 70, 180), 1)
+        })
+
+    labs = []
+    for observation in range(lab_count):
+        timestamp = now - timedelta(hours=(lab_count - observation - 1) * 4)
+        labs.append({
+            "timestamp": timestamp.isoformat(),
+            "white_cell_count": round(bounded_gauss(9, 4, 2, 25), 1),
+            "crp": round(bounded_gauss(20, 35, 0, 180), 1),
+            "lactate": round(bounded_gauss(1.5, 0.9, 0.4, 5.5), 2),
+            "creatinine": round(bounded_gauss(1.1, 0.6, 0.4, 3.5), 2),
+            "platelet_count": round(bounded_gauss(240, 70, 50, 450), 1)
+        })
 
     return {
         "patient_id": pid,
